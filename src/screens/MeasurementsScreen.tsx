@@ -206,7 +206,7 @@ const MeasurementsScreen: React.FC<Props> = ({ user, clientId }) => {
                     ['ירך', latest.thigh, 55],
                     ['שוק', latest.calf, 38],
                   ].map(([l, v, goal]) => {
-                    const diff = v && goal ? +v - goal : null;
+const diff = v && goal ? (Number(v) - Number(goal)) : null;
                     return (
                       <tr key={String(l)} style={{ borderBottom: '1px solid rgba(180,165,150,.05)' }}>
                         <td style={{ padding: '6px 3px', color: 'rgba(180,165,150,.6)' }}>{l}</td>
