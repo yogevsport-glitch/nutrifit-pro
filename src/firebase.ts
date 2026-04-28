@@ -11,7 +11,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDIlT8gXFLXDF0qC4F1jl14bglFcsaJyIY",
+apiKey: "AIzaSyDIlT8gKFLXDF0qC4F1jl14bglFcsaJyIY",
   authDomain: "nutrifit-pro-8e99b.firebaseapp.com",
   projectId: "nutrifit-pro-8e99b",
   storageBucket: "nutrifit-pro-8e99b.firebasestorage.app",
