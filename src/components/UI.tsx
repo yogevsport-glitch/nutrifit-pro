@@ -1,6 +1,5 @@
 import React from 'react';
 
-// ── ICON COMPONENT ────────────────────────────────────────
 interface IconProps { size?: number; color?: string; }
 const mkIcon = (paths: React.ReactNode) => ({ size = 18, color }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -38,7 +37,6 @@ export const Icons = {
   chevronR:  mkIcon(<polyline points="9 18 15 12 9 6"/>),
   menu:      mkIcon(<><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>),
   info:      mkIcon(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>),
-  google:    mkIcon(<><path d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.907 8.907 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z"/></>),
   drop:      mkIcon(<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>),
   activity:  mkIcon(<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>),
   user:      mkIcon(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>),
@@ -47,59 +45,53 @@ export const Icons = {
   wa:        mkIcon(<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>),
 };
 
-// ── SECTION TITLE ────────────────────────────────────────
-export const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ fontSize: 9, color: 'rgba(74,61,53,.9)', fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 9 }}>
-    {children}
-  </div>
+export const Card: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style = {} }) => (
+  <div className="card" style={style}>{children}</div>
 );
 
-// ── STAT CARD ────────────────────────────────────────────
+export const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="ctitle">{children}</div>
+);
+
 export const StatCard: React.FC<{
   label: string; value: string | number; unit?: string;
-  change?: string; changeUp?: boolean; icon?: string;
+  change?: string; changeUp?: boolean;
 }> = ({ label, value, unit, change, changeUp }) => (
-  <div className="card-sm stat-card" style={{ position: 'relative', overflow: 'hidden' }}>
-    <div style={{ fontSize: 9, color: 'rgba(180,165,150,.45)', marginBottom: 3, letterSpacing: .3 }}>{label}</div>
-    <div style={{ fontSize: 17, fontWeight: 700, color: '#b4a596', lineHeight: 1.1 }}>
-      {value}{unit && <span style={{ fontSize: 9, color: 'rgba(180,165,150,.5)', fontWeight: 400 }}> {unit}</span>}
-    </div>
-    {change && (
-      <div style={{ fontSize: 9, marginTop: 3, color: changeUp ? '#4a9e6e' : '#c45050' }}>{change}</div>
-    )}
+  <div className="met">
+    <div className="met-l">{label}</div>
+    <div className="met-v">{value}{unit && <span className="met-u"> {unit}</span>}</div>
+    {change && <div className={`met-d ${changeUp ? 'up' : 'dn'}`}>{change}</div>}
   </div>
 );
 
-// ── MACRO BAR ────────────────────────────────────────────
 export const MacroBar: React.FC<{ label: string; value: number; max: number; color: string }> = ({ label, value, max, color }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-    <div style={{ fontSize: 10, color: 'rgba(180,165,150,.6)', width: 54 }}>{label}</div>
-    <div className="macro-bar-bg">
-      <div className="macro-bar-fill" style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }} />
+  <div className="mbar-row">
+    <div className="mbar-nm">{label}</div>
+    <div className="mbar-bg">
+      <div className="mbar-fi" style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }} />
     </div>
-    <div style={{ fontSize: 10, color: '#b4a596', fontWeight: 600, width: 34, textAlign: 'left' }}>{value}g</div>
+    <div className="mbar-v">{value}g</div>
   </div>
 );
 
-// ── AI BOX ───────────────────────────────────────────────
 export const AIBox: React.FC<{ label?: string; children: React.ReactNode }> = ({ label = '◈ ניתוח AI — ACSM / WHO', children }) => (
   <div className="ai-box">
-    <div style={{ fontSize: 9, color: '#832727', fontWeight: 700, letterSpacing: .8, textTransform: 'uppercase', marginBottom: 5 }}>{label}</div>
-    <div style={{ fontSize: 12, color: 'rgba(180,165,150,.8)', lineHeight: 1.65, position: 'relative' }}>{children}</div>
+    <div className="ai-box-lbl">{label}</div>
+    <div className="ai-box-txt">{children}</div>
   </div>
 );
 
-// ── MODAL ────────────────────────────────────────────────
 export const Modal: React.FC<{
   isOpen: boolean; onClose: () => void;
   title: string; children: React.ReactNode;
 }> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal-box fade-up">
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)', zIndex: 100, display: 'flex', alignItems: 'flex-end' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="fade-up" style={{ background: 'var(--bg2)', border: '1px solid var(--border2)', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: 520, margin: '0 auto', padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#b4a596' }}>{title}</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--sand)', fontFamily: 'Outfit' }}>{title}</h3>
           <button onClick={onClose} className="btn-icon"><Icons.x size={16} /></button>
         </div>
         {children}
@@ -108,38 +100,34 @@ export const Modal: React.FC<{
   );
 };
 
-// ── SPINNER ───────────────────────────────────────────────
 export const Spinner: React.FC<{ size?: number }> = ({ size = 20 }) => (
   <div style={{ width: size, height: size, border: `2px solid rgba(131,39,39,.3)`, borderTopColor: '#832727', borderRadius: '50%', animation: 'spin .8s linear infinite' }} />
 );
 
-// ── EMPTY STATE ───────────────────────────────────────────
 export const Empty: React.FC<{ icon?: React.ReactNode; text: string; action?: React.ReactNode }> = ({ icon, text, action }) => (
-  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(180,165,150,.35)' }}>
+  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text3)' }}>
     {icon && <div style={{ marginBottom: 12, opacity: .4 }}>{icon}</div>}
-    <div style={{ fontSize: 13, marginBottom: action ? 16 : 0 }}>{text}</div>
+    <div style={{ fontSize: 13, marginBottom: action ? 16 : 0, fontFamily: 'Outfit' }}>{text}</div>
     {action}
   </div>
 );
 
-// ── BADGE ────────────────────────────────────────────────
-export const Badge: React.FC<{ status: 'paid' | 'pending' | 'overdue' | string }> = ({ status }) => {
-  const map: Record<string, { label: string; cls: string }> = {
-    paid:    { label: 'שולם',   cls: 'badge-paid'    },
-    pending: { label: 'ממתין',  cls: 'badge-pending' },
-    overdue: { label: 'באיחור', cls: 'badge-overdue' },
+export const Badge: React.FC<{ status: string }> = ({ status }) => {
+  const map: Record<string, { label: string; color: string; bg: string }> = {
+    paid:    { label: 'שולם',   color: 'var(--green)',  bg: 'rgba(74,158,110,.15)'  },
+    pending: { label: 'ממתין',  color: 'var(--orange)', bg: 'rgba(196,129,58,.15)'  },
+    overdue: { label: 'באיחור', color: 'var(--r)',      bg: 'rgba(131,39,39,.15)'   },
   };
-  const { label, cls } = map[status] || { label: status, cls: 'badge-pending' };
+  const s = map[status] || { label: status, color: 'var(--text2)', bg: 'rgba(180,165,150,.1)' };
   return (
-    <span className={cls} style={{ fontSize: 9, padding: '3px 9px', borderRadius: 20, fontWeight: 600, letterSpacing: .3, display: 'inline-block' }}>
-      {label}
+    <span style={{ fontSize: 9, padding: '3px 9px', borderRadius: 20, fontWeight: 600, display: 'inline-block', color: s.color, background: s.bg, fontFamily: 'Outfit' }}>
+      {s.label}
     </span>
   );
 };
 
-// ── FORM LABEL ────────────────────────────────────────────
 export const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ fontSize: 10, color: 'rgba(180,165,150,.5)', letterSpacing: .5, textTransform: 'uppercase', marginBottom: 6, fontWeight: 600 }}>
+  <div style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: .5, textTransform: 'uppercase', marginBottom: 6, fontWeight: 600, fontFamily: 'Outfit' }}>
     {children}
   </div>
 );
