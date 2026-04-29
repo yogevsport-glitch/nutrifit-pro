@@ -261,8 +261,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'var(--bg)' }}>
-      {/* Texture */}
+    <div style={{ maxWidth: 430, margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'var(--bg)', fontFamily: 'Outfit, sans-serif' }}>
       <div style={{ position: 'fixed', inset: 0, backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(180,165,150,.018) 1px, transparent 0)', backgroundSize: '22px 22px', pointerEvents: 'none', zIndex: 0 }} />
 
       <Header user={user} onMenuOpen={() => setSidebarOpen(true)} />
