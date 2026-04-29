@@ -1,281 +1,287 @@
-import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { auth, db, COACH_EMAILS } from './firebase';
-import { AppUser, Screen, Client } from './types';
-import { Icons, Spinner } from './components/UI';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-// Screens
-import LoginScreen from './screens/LoginScreen';
-import DashboardScreen from './screens/DashboardScreen';
-import ClientsScreen from './screens/ClientsScreen';
-import MeasurementsScreen from './screens/MeasurementsScreen';
-import ExercisesScreen from './screens/ExercisesScreen';
-import { PaymentsScreen, AlertsScreen, ReportsScreen } from './screens/FinanceScreens';
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
-// ── NAVIGATION CONFIG ────────────────────────────────────
-const coachNav = [
-  { key: 'dashboard',   label: 'לוח בקרה',  icon: 'grid'     },
-  { key: 'clients',     label: 'מתאמנים',   icon: 'users'    },
-  { key: 'payments',    label: 'תשלומים',   icon: 'card'     },
-  { key: 'alerts',      label: 'תזכורות',   icon: 'bell'     },
-  { key: 'exercises',   label: 'תרגילים',   icon: 'dumbbell' },
-  { key: 'reports',     label: 'דוחות',     icon: 'file'     },
-];
 
-const clientNav = [
-  { key: 'dashboard',     label: 'לוח שלי',  icon: 'grid'     },
-  { key: 'measurements',  label: 'מדדים',    icon: 'activity' },
-  { key: 'nutrition',     label: 'תזונה',    icon: 'nutrition'},
-  { key: 'workout',       label: 'אימון',    icon: 'dumbbell' },
-];
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --r:#832727;--r2:#6b1f1f;--r3:rgba(131,39,39,0.14);--rm:#a33535;
+  --sand:#b4a596;--sand2:#9a8d80;--sand3:rgba(180,165,150,0.12);
+  --bg:#0e0b09;--bg2:#141009;--bg3:#1a1410;
+  --card:#1f1815;--card2:#261e1a;--card3:#2e2420;
+  --text:#b4a596;--text2:#7d6e62;--text3:#4a3d35;
+  --border:rgba(180,165,150,0.09);--border2:rgba(180,165,150,0.18);
+  --green:#4a9e6e;--orange:#c4813a;--blue:#4a7ab5;--purple:#7a5a9e;
+  --radius:16px;--rsm:10px;--rxs:6px;
+  font-family:'Outfit',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
+#root,#app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg)}
 
-// ── SIMPLE ICON RENDERER ──────────────────────────────────
-const NavIcon: React.FC<{ name: string; size: number }> = ({ name, size }) => {
-  const Icon = (Icons as any)[name];
-  return Icon ? <Icon size={size} /> : null;
-};
+/* Subtle texture overlay */
+#app::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b4a596' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:0}
+.hdr,.main-tabs,.content{position:relative;z-index:1}
 
-// ── PLACEHOLDER SCREENS ───────────────────────────────────
-const NutritionScreen: React.FC<{ user: AppUser }> = ({ user }) => (
-  <div className="fade-up" style={{ padding: 14 }}>
-    <div style={{ fontSize: 11, color: 'rgba(180,165,150,.4)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>תזונה</div>
-    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#b4a596', marginBottom: 16 }}>תפריט</h2>
-    <div className="card">
-      <div style={{ fontSize: 13, color: 'rgba(180,165,150,.6)', lineHeight: 1.7 }}>
-        התפריט שלך ייטען כאן. המאמן שלך יבנה תפריט מותאם אישית.
-      </div>
-    </div>
-  </div>
-);
+/* HEADER */
+.hdr{background:var(--bg2);padding:14px 18px 11px;border-bottom:1px solid var(--border);flex-shrink:0;backdrop-filter:blur(12px)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-size:20px;font-weight:700;color:var(--sand);letter-spacing:.5px;font-family:'Outfit'}
+.logo span{color:var(--r);font-weight:800}
+.hdr-icons{display:flex;gap:7px}
+.ico{width:34px;height:34px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border2);transition:all .2s}
+.ico:hover{background:var(--card2);border-color:var(--sand3)}
+.ico svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.client-bar{display:flex;align-items:center;gap:10px}
+.cava{width:36px;height:36px;border-radius:10px;background:var(--r3);border:1px solid var(--r2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--r);flex-shrink:0;font-family:'Outfit'}
+.cnm{font-size:13px;font-weight:600;color:var(--sand);font-family:'Outfit'}
+.csub{font-size:10px;color:var(--text3);margin-top:1px}
+.cbadge{margin-right:auto;background:rgba(74,158,110,.12);color:var(--green);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid rgba(74,158,110,.25);font-weight:600;letter-spacing:.3px}
 
-const WorkoutScreen: React.FC<{ user: AppUser }> = ({ user }) => (
-  <div className="fade-up" style={{ padding: 14 }}>
-    <div style={{ fontSize: 11, color: 'rgba(180,165,150,.4)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>אימון</div>
-    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#b4a596', marginBottom: 16 }}>תכנית אימון</h2>
-    <div className="card">
-      <div style={{ fontSize: 13, color: 'rgba(180,165,150,.6)', lineHeight: 1.7 }}>
-        תכנית האימון שלך תופיע כאן לאחר שהמאמן יבנה אותה.
-      </div>
-    </div>
-  </div>
-);
+/* TABS */
+.main-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:0 4px}
+.main-tabs::-webkit-scrollbar{display:none}
+.mtab{flex:1;min-width:58px;padding:10px 3px 7px;font-size:9.5px;color:var(--text3);border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Outfit';white-space:nowrap;transition:color .2s;border-bottom:2px solid transparent;letter-spacing:.2px}
+.mtab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.mtab.active{color:var(--r);border-bottom-color:var(--r)}
 
-// ── SIDEBAR ───────────────────────────────────────────────
-const Sidebar: React.FC<{
-  user: AppUser; current: Screen; onNav: (s: Screen) => void; onLogout: () => void; isOpen: boolean; onClose: () => void;
-}> = ({ user, current, onNav, onLogout, isOpen, onClose }) => {
-  const nav = user.role === 'coach' ? coachNav : clientNav;
+/* CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.content::-webkit-scrollbar{width:2px}
+.pg{display:none;flex-direction:column;gap:11px;padding:14px}
+.pg.active{display:flex}
 
-  return (
-    <>
-      {isOpen && (
-        <div onClick={onClose}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)', zIndex: 90 }} />
-      )}
-      <aside style={{
-        position: 'fixed', top: 0, right: 0, height: '100%', width: 260,
-        background: '#0e0b09', borderLeft: '1px solid rgba(180,165,150,.09)',
-        zIndex: 100, display: 'flex', flexDirection: 'column', padding: 24,
-        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform .25s ease',
-      }}>
-        {/* Logo */}
-        <div style={{ marginBottom: 32, paddingBottom: 20, borderBottom: '1px solid rgba(180,165,150,.07)' }}>
-          <div style={{ fontSize: 20, fontWeight: 900, color: '#b4a596', letterSpacing: -0.5 }}>
-            NutriFit<span style={{ color: '#832727' }}>Pro</span>
-          </div>
-          <div style={{ fontSize: 9, color: 'rgba(180,165,150,.35)', marginTop: 4, letterSpacing: 2, textTransform: 'uppercase' }}>by Y-Sport</div>
-        </div>
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.card-glow{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;box-shadow:inset 0 1px 0 rgba(180,165,150,.06)}
+.ctitle{font-size:9px;color:var(--text3);font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:9px;font-family:'Outfit'}
 
-        {/* User */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-          {user.avatar ? (
-            <img src={user.avatar} alt="" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover' }} />
-          ) : (
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(131,39,39,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#832727' }}>
-              {user.name?.charAt(0)}
-            </div>
-          )}
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#b4a596' }}>{user.name}</div>
-            <div style={{ fontSize: 9, color: 'rgba(180,165,150,.4)', textTransform: 'uppercase', letterSpacing: 1 }}>
-              {user.role === 'coach' ? '🏋️ מאמן' : '👤 מתאמן'}
-            </div>
-          </div>
-        </div>
+/* METRICS */
+.mg2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mg4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.met{background:var(--card2);border:1px solid var(--border);border-radius:var(--rsm);padding:9px 10px;position:relative;overflow:hidden}
+.met::after{content:'';position:absolute;top:0;right:0;width:2px;height:100%;background:var(--r);opacity:0;transition:opacity .2s}
+.met:hover::after{opacity:.6}
+.met-l{font-size:9px;color:var(--text3);margin-bottom:3px;font-family:'Outfit';letter-spacing:.3px}
+.met-v{font-size:17px;font-weight:700;color:var(--sand);line-height:1.1;font-family:'Outfit'}
+.met-u{font-size:9px;color:var(--text2);font-weight:400}
+.met-d{font-size:9px;margin-top:3px;font-family:'Outfit'}
+.up{color:var(--green)}.dn{color:#c45050}.neu{color:var(--text3)}
+.ring-row{display:flex;align-items:center;gap:14px}
+.ring-info{flex:1}
+.mbar-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.mbar-row:last-child{margin-bottom:0}
+.mbar-nm{font-size:10px;color:var(--text2);width:52px;font-family:'Outfit'}
+.mbar-bg{flex:1;height:3px;background:rgba(180,165,150,0.08);border-radius:2px;overflow:hidden}
+.mbar-fi{height:100%;border-radius:2px;position:relative}
+.mbar-v{font-size:10px;color:var(--sand);font-weight:600;width:32px;text-align:left;font-family:'Outfit'}
 
-        {/* Nav */}
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {nav.map(item => {
-            const isActive = current === item.key;
-            return (
-              <button key={item.key} onClick={() => { onNav(item.key as Screen); onClose(); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, border: 'none', background: isActive ? 'rgba(131,39,39,.15)' : 'transparent', color: isActive ? '#832727' : 'rgba(180,165,150,.5)', cursor: 'pointer', textAlign: 'right', fontFamily: 'Outfit', fontSize: 13, fontWeight: isActive ? 700 : 400, transition: 'all .15s', borderRight: isActive ? '2px solid #832727' : '2px solid transparent' }}>
-                <NavIcon name={item.icon} size={17} />
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
+/* AI BOX */
+.ai-box{background:linear-gradient(135deg,rgba(131,39,39,.18),rgba(131,39,39,.05));border:1px solid rgba(131,39,39,.3);border-radius:var(--radius);padding:12px;position:relative;overflow:hidden}
+.ai-box::before{content:'';position:absolute;top:-20px;left:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(131,39,39,.15),transparent 70%)}
+.ai-box-lbl{font-size:9px;color:var(--r);font-weight:700;letter-spacing:.8px;margin-bottom:5px;text-transform:uppercase;font-family:'Outfit'}
+.ai-box-txt{font-size:12px;color:var(--text2);line-height:1.65;font-family:'Outfit'}
 
-        {/* Logout */}
-        <button onClick={onLogout}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, border: 'none', background: 'transparent', color: 'rgba(180,165,150,.35)', cursor: 'pointer', fontFamily: 'Outfit', fontSize: 12, marginTop: 16 }}>
-          <Icons.logout size={16} />
-          התנתק
-        </button>
-      </aside>
-    </>
-  );
-};
+/* SUB TABS */
+.sub-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.sub-tabs::-webkit-scrollbar{display:none}
+.stab{padding:6px 13px;border-radius:20px;font-size:11px;font-family:'Outfit';cursor:pointer;border:1px solid var(--border2);color:var(--text3);background:transparent;white-space:nowrap;transition:all .2s;flex-shrink:0;letter-spacing:.2px}
+.stab.active{background:var(--r);color:var(--sand);border-color:var(--r)}
+.sub-section{display:none;flex-direction:column;gap:9px}
+.sub-section.show{display:flex}
 
-// ── BOTTOM NAV (mobile) ────────────────────────────────────
-const BottomNav: React.FC<{ user: AppUser; current: Screen; onNav: (s: Screen) => void }> = ({ user, current, onNav }) => {
-  const nav = user.role === 'coach' ? coachNav.slice(0, 5) : clientNav;
-  return (
-    <div className="main-tabs" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, maxWidth: 430, margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-      {nav.map(item => (
-        <button key={item.key} onClick={() => onNav(item.key as Screen)}
-          className={`mtab ${current === item.key ? 'active' : ''}`}>
-          <NavIcon name={item.icon} size={18} />
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
-};
+/* TABLE */
+.bst{width:100%;border-collapse:collapse}
+.bst td{padding:7px 4px;font-size:11px;border-bottom:1px solid var(--border);font-family:'Outfit'}
+.bst tr:last-child td{border-bottom:none}
+.bst-l{color:var(--text2)}.bst-c{font-weight:700;color:var(--sand);text-align:center}.bst-t{color:var(--text3);text-align:center}.bst-d{text-align:center}
 
-// ── HEADER ────────────────────────────────────────────────
-const Header: React.FC<{ user: AppUser; onMenuOpen: () => void }> = ({ user, onMenuOpen }) => (
-  <div className="hdr">
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-      <div className="logo">Nutri<span>Fit</span> Pro</div>
-      <div style={{ display: 'flex', gap: 7 }}>
-        <div style={{ width: 34, height: 34, background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Icons.bell size={16} color="var(--sand2)" />
-        </div>
-        <div onClick={onMenuOpen} style={{ width: 34, height: 34, background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Icons.menu size={16} color="var(--sand2)" />
-        </div>
-      </div>
-    </div>
-    <div className="client-bar">
-      {user.avatar
-        ? <img src={user.avatar} alt="" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-        : <div className="cava">{user.name?.charAt(0)}</div>
-      }
-      <div>
-        <div className="cnm">{user.name}</div>
-        <div className="csub">{user.role === 'coach' ? '🏋️ מאמן • Y-Sport' : '👤 מתאמן'}</div>
-      </div>
-      <div className="cbadge" style={{ marginRight: 'auto' }}>פעיל</div>
-    </div>
-  </div>
-);
+/* FOOD */
+.meal-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer}
+.meal-hd-l{font-size:12px;font-weight:600;color:var(--text2);font-family:'Outfit'}
+.meal-hd-r{font-size:11px;color:var(--r);font-family:'Outfit';font-weight:600}
+.food-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.food-row:last-child{border-bottom:none}
+.food-nm{font-size:12px;font-weight:500;color:var(--sand);font-family:'Outfit'}
+.food-mc{font-size:9px;color:var(--text3);margin-top:1px;font-family:'Outfit'}
+.food-kc{font-size:13px;font-weight:700;color:var(--r);font-family:'Outfit'}
+.vit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.vit{background:var(--card2);border-radius:var(--rsm);padding:7px 3px;text-align:center;border:1px solid var(--border)}
+.vit-l{font-size:8px;color:var(--text3);margin-bottom:2px;font-family:'Outfit';letter-spacing:.3px}
+.vit-v{font-size:11px;font-weight:700;font-family:'Outfit'}
 
-// ── APP ───────────────────────────────────────────────────
-const App: React.FC = () => {
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [authReady, setAuthReady] = useState(false);
-  const [screen, setScreen] = useState<Screen>('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+/* WORKOUT */
+.wk-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.wk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.wk-nm{font-size:13px;font-weight:700;color:var(--sand);font-family:'Outfit'}
+.wkbadge{font-size:9px;padding:3px 9px;border-radius:20px;font-weight:600;letter-spacing:.3px;font-family:'Outfit'}
+.bstr{background:rgba(196,129,58,.12);color:var(--orange)}
+.bcrd{background:rgba(74,122,181,.12);color:var(--blue)}
+.ex-row{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--border)}
+.ex-row:last-child{border-bottom:none}
+.ex-ico{width:28px;height:28px;background:var(--card2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ex-ico svg{width:14px;height:14px;stroke:var(--sand2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ex-nm{font-size:11px;font-weight:600;color:var(--sand);font-family:'Outfit'}
+.ex-det{font-size:9px;color:var(--text3);margin-top:1px;font-family:'Outfit'}
+.ex-st{font-size:11px;font-weight:700;font-family:'Outfit'}
+.done{color:var(--green)}.pend{color:var(--text3)}
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, fbUser => {
-      if (fbUser) {
-        const userRef = doc(db, 'users', fbUser.uid);
-        const unsubUser = onSnapshot(userRef, snap => {
-          if (snap.exists()) {
-            const data = snap.data();
-            setUser({
-              uid: fbUser.uid,
-              name: fbUser.displayName || data.name || 'משתמש',
-              email: fbUser.email || '',
-              role: COACH_EMAILS.includes(fbUser.email || '') ? 'coach' : (data.role || 'client'),
-              avatar: fbUser.photoURL || data.avatar,
-              ...data,
-            } as AppUser);
-          } else {
-            const isCoach = COACH_EMAILS.includes(fbUser.email || '');
-            const newUser: AppUser = {
-              uid: fbUser.uid,
-              name: fbUser.displayName || 'משתמש',
-              email: fbUser.email || '',
-              role: isCoach ? 'coach' : 'client',
-              avatar: fbUser.photoURL || undefined,
-              createdAt: new Date().toISOString(),
-            };
-            setUser(newUser);
-          }
-          setAuthReady(true);
-        });
-        return () => unsubUser();
-      } else {
-        setUser(null);
-        setAuthReady(true);
-      }
-    });
-    return unsub;
-  }, []);
+/* PLAN ROWS */
+.prog-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.prog-row:last-child{border-bottom:none}
+.prog-ico{width:32px;height:32px;background:var(--card2);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prog-ico svg{width:15px;height:15px;stroke:var(--sand2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.prog-nm{font-size:12px;font-weight:600;color:var(--sand);font-family:'Outfit'}
+.prog-sub{font-size:9px;color:var(--text3);margin-top:1px;font-family:'Outfit'}
+.prog-val{font-size:12px;font-weight:700;margin-right:auto;font-family:'Outfit'}
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    setUser(null);
-    setScreen('dashboard');
-  };
+/* SKINFOLD */
+.skf-row{display:flex;align-items:flex-start;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.skf-row:last-child{border-bottom:none}
+.skf-site{font-size:12px;font-weight:700;color:var(--r);font-family:'Outfit'}
+.skf-desc{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;max-width:155px;font-family:'Outfit'}
+.skf-inps{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.skf-inp{width:52px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rsm);padding:6px 7px;font-size:12px;color:var(--sand);text-align:center;font-family:'Outfit';outline:none}
+.skf-inp:focus{border-color:var(--r)}
+.skf-lbl{font-size:8px;color:var(--text3);text-align:center;margin-bottom:2px;font-family:'Outfit'}
 
-  const handleNav = (s: Screen, data?: any) => {
-    if (s === 'client-profile' && data) setSelectedClient(data);
-    setScreen(s);
-  };
+/* CHARTS */
+.chart-wrap{display:flex;align-items:flex-end;gap:2px;height:40px}
+.cbar{flex:1;border-radius:2px 2px 0 0;min-height:3px}
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.gal-item{aspect-ratio:1;background:var(--card2);border:1px solid var(--border);border-radius:var(--rsm);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:border-color .2s}
+.gal-item:hover{border-color:var(--border2)}
+.gal-dt{font-size:9px;color:var(--text3);font-family:'Outfit'}
+.gal-wt{font-size:11px;font-weight:600;color:var(--text2);font-family:'Outfit'}
 
-  // Loading
-  if (!authReady) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#0e0b09', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: '#b4a596' }}>NutriFit<span style={{ color: '#832727' }}>Pro</span></div>
-        <Spinner size={24} />
-      </div>
-    );
-  }
+/* PAYMENTS */
+.pay-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.pay-hd{display:flex;align-items:center;gap:9px}
+.pay-ava{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:'Outfit'}
+.pay-nm{font-size:12px;font-weight:700;color:var(--sand);font-family:'Outfit'}
+.pay-plan{font-size:9px;color:var(--text3);font-family:'Outfit'}
+.pay-right{margin-right:auto;text-align:left}
+.pay-amt{font-size:15px;font-weight:800;color:var(--sand);font-family:'Outfit'}
+.pay-st{font-size:9px;padding:3px 9px;border-radius:20px;font-weight:600;margin-top:3px;display:inline-block;letter-spacing:.3px;font-family:'Outfit'}
+.paid{background:rgba(74,158,110,.12);color:var(--green)}
+.pend-p{background:rgba(196,129,58,.12);color:var(--orange)}
+.late{background:rgba(131,39,39,.15);color:var(--r)}
+.pay-div{border:none;border-top:1px solid var(--border);margin:9px 0}
+.pay-meta{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:'Outfit'}
 
-  // Not logged in
-  if (!user) return <LoginScreen onLogin={u => { setUser(u); setScreen('dashboard'); }} />;
+/* STEPS */
+.steps-bars{display:flex;align-items:flex-end;gap:3px;height:44px}
+.sbar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.sbar{width:100%;border-radius:3px 3px 0 0;min-height:3px}
+.sbar-today{background:var(--r)}
+.sbar-prev{background:var(--r2)}
+.sbar-lbl{font-size:8px;color:var(--text3);font-family:'Outfit'}
 
-  // Render screen
-  const renderScreen = () => {
-    switch (screen) {
-      case 'dashboard':    return <DashboardScreen user={user} onNavigate={handleNav} />;
-      case 'clients':      return <ClientsScreen onClientSelect={c => handleNav('measurements', c)} />;
-      case 'measurements': return <MeasurementsScreen user={user} clientId={selectedClient?.uid} />;
-      case 'exercises':    return <ExercisesScreen />;
-      case 'payments':     return <PaymentsScreen />;
-      case 'alerts':       return <AlertsScreen />;
-      case 'reports':      return <ReportsScreen />;
-      case 'nutrition':    return <NutritionScreen user={user} />;
-      case 'workout':      return <WorkoutScreen user={user} />;
-      default:             return <DashboardScreen user={user} onNavigate={handleNav} />;
-    }
-  };
+/* WATER */
+.water-gs{display:flex;gap:5px;flex-wrap:wrap}
+.wg{width:30px;height:40px;border:1.5px solid var(--border2);border-radius:0 0 6px 6px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s}
+.wg.full{border-color:var(--blue)}
+.wg-fill{position:absolute;bottom:0;left:0;right:0;background:rgba(74,122,181,.15)}
+.wg.full .wg-fill{height:100%;background:rgba(74,122,181,.55)}
 
-  return (
-    <div style={{ maxWidth: 430, margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'var(--bg)', fontFamily: 'Outfit, sans-serif' }}>
-      <div style={{ position: 'fixed', inset: 0, backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(180,165,150,.018) 1px, transparent 0)', backgroundSize: '22px 22px', pointerEvents: 'none', zIndex: 0 }} />
+/* RECIPES */
+.rec-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:11px;cursor:pointer;transition:all .2s}
+.rec-card:hover{border-color:var(--border2);background:var(--card2)}
+.rec-emo{width:44px;height:44px;background:var(--card2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rec-emo svg{width:22px;height:22px;stroke:var(--sand2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rec-nm{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--sand);font-family:'Outfit'}
+.rec-tags{display:flex;gap:4px;flex-wrap:wrap}
+.rtag{font-size:9px;color:var(--text3);background:var(--card2);padding:2px 7px;border-radius:8px;border:1px solid var(--border);font-family:'Outfit'}
+.rec-kc{font-size:11px;color:var(--r);font-weight:700;white-space:nowrap;text-align:center;font-family:'Outfit'}
 
-      <Header user={user} onMenuOpen={() => setSidebarOpen(true)} />
+/* SUMMARY */
+.sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sum-pill{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:9px 4px;text-align:center;position:relative;overflow:hidden}
+.sum-pill::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--r);opacity:.4}
+.sum-v{font-size:17px;font-weight:800;color:var(--sand);font-family:'Outfit'}
+.sum-l{font-size:9px;color:var(--text3);margin-top:2px;font-family:'Outfit';letter-spacing:.3px}
+.timer-big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--sand);font-family:'Outfit'}
 
-      <Sidebar user={user} current={screen} onNav={s => setScreen(s)} onLogout={handleLogout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+/* CHAT */
+.chat-pg{padding:14px;gap:9px;height:calc(100vh - 128px)}
+.chat-pg.active{display:flex;flex-direction:column}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+.chat-msgs::-webkit-scrollbar{display:none}
+.cmsg{max-width:83%;font-size:13px;line-height:1.6;padding:10px 14px;border-radius:18px;word-break:break-word;font-family:'Outfit'}
+.cmsg.ai{background:var(--card2);color:var(--sand);align-self:flex-start;border-bottom-right-radius:4px;border:1px solid var(--border)}
+.cmsg.usr{background:var(--r);color:#f5ede8;align-self:flex-end;border-bottom-left-radius:4px}
+.ai-lbl{font-size:9px;color:var(--text3);padding-right:2px;margin-bottom:2px;font-family:'Outfit';letter-spacing:.5px;text-transform:uppercase}
+.typing{display:flex;gap:4px;padding:10px 14px;background:var(--card2);border-radius:18px;border-bottom-right-radius:4px;align-self:flex-start;border:1px solid var(--border)}
+.dot{width:5px;height:5px;background:var(--text3);border-radius:50%;animation:bl 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.2}40%{opacity:.8}}
+.ci-row{display:flex;gap:8px;padding-top:9px;border-top:1px solid var(--border)}
+.ci{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:24px;padding:10px 15px;font-size:13px;color:var(--sand);outline:none;font-family:'Outfit';direction:rtl}
+.ci::placeholder{color:var(--text3)}
+.ci:focus{border-color:var(--r)}
+.send{background:var(--r);color:#f5ede8;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.send:hover{opacity:.85}
+.send svg{width:16px;height:16px;stroke:#f5ede8;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;font-size:11px;cursor:pointer;color:var(--text2);font-family:'Outfit';transition:all .2s}
+.chip:hover{border-color:var(--r);color:var(--r)}
 
-      {/* Content */}
-      <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 70, position: 'relative', zIndex: 1 }}>
-        {renderScreen()}
-      </main>
+/* BUTTONS */
+.btn-pri{width:100%;padding:12px;background:var(--r);color:#f5ede8;border:none;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit';letter-spacing:.3px;transition:opacity .2s}
+.btn-pri:hover{opacity:.88}
+.btn-sec{padding:9px 15px;background:transparent;border:1px solid var(--border2);border-radius:var(--rsm);font-size:11px;color:var(--text2);cursor:pointer;font-family:'Outfit';transition:all .2s}
+.btn-sec:hover{border-color:var(--sand2);color:var(--sand)}
+.btn-ghost{width:100%;padding:11px;background:transparent;border:1px dashed var(--border2);border-radius:var(--rsm);font-size:12px;color:var(--text3);cursor:pointer;font-family:'Outfit';transition:all .2s}
+.btn-ghost:hover{border-color:var(--r);color:var(--r)}
+.form-inp{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rsm);padding:10px 12px;font-size:13px;color:var(--sand);font-family:'Outfit';outline:none;transition:border-color .2s}
+.form-inp:focus{border-color:var(--r)}
+.form-inp::placeholder{color:var(--text3)}
+.form-sel{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rsm);padding:10px 12px;font-size:12px;color:var(--sand);font-family:'Outfit';outline:none}
 
-      <BottomNav user={user} current={screen} onNav={s => setScreen(s)} />
-    </div>
-  );
-};
+/* ALERTS */
+.alert-item{display:flex;align-items:center;gap:9px;padding:10px;background:var(--card2);border-radius:var(--rsm);border:1px solid var(--border)}
+.alert-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.alert-nm{font-size:12px;font-weight:600;color:var(--sand);font-family:'Outfit'}
+.alert-sub{font-size:10px;color:var(--text3);margin-top:1px;font-family:'Outfit'}
+.alert-done{background:var(--green);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'Outfit';white-space:nowrap;font-weight:600}
 
-export default App;
+/* CLIENTS */
+.cl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px;cursor:pointer;transition:all .2s}
+.cl-card:hover{border-color:var(--border2);background:var(--card2)}
+.cl-row{display:flex;align-items:center;gap:11px}
+.cl-ava{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff;font-family:'Outfit'}
+.cl-nm{font-size:13px;font-weight:700;color:var(--sand);font-family:'Outfit'}
+.cl-sub{font-size:10px;color:var(--text3);margin-top:1px;font-family:'Outfit'}
+.cl-right{margin-right:auto;text-align:left}
+.cl-plan-badge{font-size:9px;padding:3px 9px;border-radius:20px;font-weight:600;display:inline-block;font-family:'Outfit';letter-spacing:.3px}
+.cl-status{font-size:9px;margin-top:3px;font-family:'Outfit'}
+
+
+
+/* Recharts overrides */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #261e1a !important;
+  border: 1px solid rgba(180,165,150,0.18) !important;
+  border-radius: 10px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 12px !important;
+  color: #b4a596 !important;
+}
+
+/* Animations */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+.fade-up { animation: fadeUp .35s ease both; }
+.fade-in { animation: fadeIn .25s ease both; }
+
+.skeleton {
+  background: linear-gradient(90deg, #1f1815 25%, #261e1a 50%, #1f1815 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
