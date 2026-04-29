@@ -134,10 +134,10 @@ const Sidebar: React.FC<{
 const BottomNav: React.FC<{ user: AppUser; current: Screen; onNav: (s: Screen) => void }> = ({ user, current, onNav }) => {
   const nav = user.role === 'coach' ? coachNav.slice(0, 5) : clientNav;
   return (
-    <div className="tab-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, maxWidth: 430, margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 0px)', boxShadow: '0 -1px 0 rgba(180,165,150,.07)' }}>
+    <div className="main-tabs" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, maxWidth: 430, margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {nav.map(item => (
         <button key={item.key} onClick={() => onNav(item.key as Screen)}
-          className={`tab-btn ${current === item.key ? 'active' : ''}`}>
+          className={`mtab ${current === item.key ? 'active' : ''}`}>
           <NavIcon name={item.icon} size={18} />
           {item.label}
         </button>
@@ -148,14 +148,30 @@ const BottomNav: React.FC<{ user: AppUser; current: Screen; onNav: (s: Screen) =
 
 // ── HEADER ────────────────────────────────────────────────
 const Header: React.FC<{ user: AppUser; onMenuOpen: () => void }> = ({ user, onMenuOpen }) => (
-  <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#141009', borderBottom: '1px solid rgba(180,165,150,.09)', flexShrink: 0, position: 'sticky', top: 0, zIndex: 40 }}>
-    <div style={{ fontSize: 18, fontWeight: 900, color: '#b4a596', letterSpacing: -0.5 }}>
-      NutriFit<span style={{ color: '#832727' }}>Pro</span>
+  <div className="hdr">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div className="logo">Nutri<span>Fit</span> Pro</div>
+      <div style={{ display: 'flex', gap: 7 }}>
+        <div style={{ width: 34, height: 34, background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icons.bell size={16} color="var(--sand2)" />
+        </div>
+        <div onClick={onMenuOpen} style={{ width: 34, height: 34, background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icons.menu size={16} color="var(--sand2)" />
+        </div>
+      </div>
     </div>
-    <button onClick={onMenuOpen} className="btn-icon">
-      <Icons.menu size={18} />
-    </button>
-  </header>
+    <div className="client-bar">
+      {user.avatar
+        ? <img src={user.avatar} alt="" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+        : <div className="cava">{user.name?.charAt(0)}</div>
+      }
+      <div>
+        <div className="cnm">{user.name}</div>
+        <div className="csub">{user.role === 'coach' ? '🏋️ מאמן • Y-Sport' : '👤 מתאמן'}</div>
+      </div>
+      <div className="cbadge" style={{ marginRight: 'auto' }}>פעיל</div>
+    </div>
+  </div>
 );
 
 // ── APP ───────────────────────────────────────────────────
@@ -245,7 +261,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ maxWidth: 430, margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', background: 'var(--bg)' }}>
       {/* Texture */}
       <div style={{ position: 'fixed', inset: 0, backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(180,165,150,.018) 1px, transparent 0)', backgroundSize: '22px 22px', pointerEvents: 'none', zIndex: 0 }} />
 
